@@ -1,5 +1,7 @@
 #include "AssetsManager.h"
 
+AssetsManager assetsManager;
+
 AssetsManager::~AssetsManager()
 {
     for (auto i = shadersMap.begin(); i != shadersMap.end(); i++) {

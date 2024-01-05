@@ -1,8 +1,11 @@
 #include "Square.h"
 
 Square::Square(Object2D* parent)
-	: Object2D(parent, "Square"), color(255), textureTransparency(1), texture(nullptr), shader(nullptr), colorCodeShader(nullptr)
+	: Object2D(parent), color(255), textureTransparency(1), texture(nullptr), shader(nullptr)
 {
+	type = "Square";
+
+
 	enableEvent();
 
 	float w = width();
@@ -50,6 +53,12 @@ Square::Square(Object2D* parent)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (const void*)(3 * sizeof(float)));
 }
 
+Square::Square(const Square& s) 
+	: Object2D(s), vao(s.vao), vbo(s.vbo), ibo(s.ibo), shader(s.shader), texture(s.texture),
+	  color(s.color), textureTransparency(s.textureTransparency)
+{
+}
+
 Square::~Square()
 {
 	glDeleteVertexArrays(1, &vao);
@@ -57,22 +66,7 @@ Square::~Square()
 	glDeleteBuffers(1, &ibo);
 }
 
-void Square::renderSelect(Camera& camera, int code) const
-{
-	colorCodeShader->useprogram();
-	colorCodeShader->setUniformMat4x4f("_projection", 1, glm::value_ptr(camera.getProjection()));
-	colorCodeShader->setUniformMat4x4f("_view", 1, glm::value_ptr(camera.getView()));
-	colorCodeShader->setUniformMat4x4f("_model", 1, glm::value_ptr(transform.localToWorld()));
-	colorCodeShader->setUniform1i("_code", code);
-
-	glDisable(GL_BLEND);
-
-	glBindVertexArray(vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
-	glBindVertexArray(0);
-}
-
-void Square::draw(Camera& camera) const
+void Square::draw(const Camera& camera) const
 {
 	shader->useprogram();
 
@@ -80,8 +74,10 @@ void Square::draw(Camera& camera) const
 	shader->setUniformMat4x4f("_view", 1, glm::value_ptr(camera.getView()));
 	shader->setUniformMat4x4f("_model", 1, glm::value_ptr(transform.localToWorld()));
 
-	texture->bind(0);
-	shader->setUniform1i("_texture", 0);
+	if (texture != nullptr) {
+		texture->bind(0);
+		shader->setUniform1i("_texture", 0);
+	}
 
 	shader->setUniformVec4f("_color", (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, (float)color.a / 255.0f);
 	shader->setUniform1f("_textureTransparency", textureTransparency);
@@ -93,33 +89,19 @@ void Square::draw(Camera& camera) const
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	glBindVertexArray(0);
 
-	texture->unbind();
-}
-
-void Square::setCallback(const EventFunc& func)
-{
-	callbacks.push_back(func);
-}
-
-void Square::mouseEvent(MouseButtonEvent* e)
-{
-	if (e->type == MousePress)
-		onMousePress(e);
-	else if (e->type == MouseRelease)
-		onMouseRelease(e);
-}
-
-
-void Square::onMouseRelease(MouseButtonEvent* e)
-{
-	std::cout << "mouse release" << std::endl;
-}
-
-void Square::onMousePress(MouseButtonEvent* e)
-{
-	if (eventSate()) {
-		for (int i = 0; i < callbacks.size(); i++) {
-			callbacks[i]("");
-		}
+	if (texture != nullptr) {
+		texture->unbind();
 	}
+}
+
+
+
+Square* Square::duplicate()
+{
+	Square* copy = new Square(this);
+	return copy;
+}
+
+void Square::update()
+{
 }

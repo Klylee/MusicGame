@@ -35,8 +35,8 @@ public:
 
 	Camera(int width, int height);
 
-	glm::mat4 getProjection();
-	glm::mat4 getView();
+	glm::mat4 getProjection() const;
+	glm::mat4 getView() const;
 
 	void setProjectionMode(ProjectionMode m);
 	void setSize(float size);

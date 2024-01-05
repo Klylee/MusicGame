@@ -25,12 +25,12 @@ Camera::Camera(int width, int height) : WHRatio((float)width / (float)height), s
 	updateViewMat();
 }
 
-glm::mat4 Camera::getProjection()
+glm::mat4 Camera::getProjection() const
 {
 	return projection;
 }
 
-glm::mat4 Camera::getView()
+glm::mat4 Camera::getView() const
 {
 	return view;
 }

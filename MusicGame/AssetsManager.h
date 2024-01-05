@@ -6,11 +6,12 @@
 #include <map>
 #include <string>
 
+
 class AssetsManager
 {
 	std::map<std::string, Shader*> shadersMap;
 	std::map<std::string, Texture*> texturesMap;
-	
+
 public:
 	explicit AssetsManager() {}
 	~AssetsManager();
@@ -24,3 +25,5 @@ public:
 	void deleteShader(const std::string& shaderName);
 	void deleteTexture(const std::string& textureName);
 };
+
+extern AssetsManager assetsManager;

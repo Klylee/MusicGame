@@ -1,4 +1,6 @@
 #include "TextLabel.h"
+#include <sstream>
+#include <iomanip>
 
 
 CharTexturesMap::~CharTexturesMap()
@@ -85,90 +87,111 @@ CharTexture* CharTexturesMap::findCharTexture(const std::string& font, const cha
 }
 
 
+namespace UI {
+    CharTexturesMap TextLabel::chartexmap;
+    TextLabel::TextLabel(unsigned int fontSize, const std::string& fontfile, const std::string& text, Object2D* parent)
+        : Object2D(parent), text(text), fontSize(fontSize), textColor(textColor)
+    {
+        type = "TextLabel";
 
-CharTexturesMap TextLabel::chartexmap;
-TextLabel::TextLabel(unsigned int fontSize, const std::string& fontfile, const std::string& text, Object2D* parent)
-    : Object2D(parent, "TextLabel"), text(text), fontSize(fontSize), textColor(textColor)
-{
-    font = fontfile.substr(fontfile.find_last_of("/") + 1);
-    font = font.substr(0, font.find("."));
+        font = fontfile.substr(fontfile.find_last_of("/") + 1);
+        font = font.substr(0, font.find("."));
 
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-
-    texttexs = new CharTexture*[text.size()];
-    for (int i = 0; i < text.size(); i++) {
-        texttexs[i] = chartexmap.loadCharTexture(text[i], fontSize);
-    }
-}
-
-TextLabel::~TextLabel()
-{
-    delete[] texttexs;
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
-}
-
-void TextLabel::draw(Camera& camera) const
-{
-    shader->useprogram();
-    shader->setUniformMat4x4f("_projection", 1, glm::value_ptr(camera.getProjection()));
-    shader->setUniformMat4x4f("_view", 1, glm::value_ptr(camera.getView()));
-    shader->setUniformMat4x4f("_model", 1, glm::value_ptr(transform.localToWorld()));
-    shader->setUniformVec4f("_textColor", (float)textColor.r / 255.0f, (float)textColor.g / 255.0f, (float)textColor.b / 255.0f, (float)textColor.a / 255.0f);
-    glActiveTexture(GL_TEXTURE0);
-    shader->setUniform1i("_text", 0);
-
-    glBindVertexArray(vao);
-
-    float x = transform.position().x - width() / 2;
-    float y = transform.position().y - height() / 2;
-
-    for (int i = 0; i < text.size(); i++) {
-        CharTexture* c = texttexs[i];
-
-        float cx = x + c->bearing.x * camera.pixelPerUnit;
-        float cy = y - (c->size.y * camera.pixelPerUnit - c->bearing.y * camera.pixelPerUnit);
-        float cw = c->size.x * camera.pixelPerUnit;
-        float ch = c->size.y * camera.pixelPerUnit;
-
-        float vertices[6][4] = {
-            {cx,      cy + ch, 0.0f, 0.0f},
-            {cx,      cy,      0.0f, 1.0f},
-            {cx + cw, cy,      1.0f, 1.0f},
-
-            {cx,      cy + ch, 0.0f, 0.0f},
-            {cx + cw, cy,      1.0f, 1.0f}, 
-            {cx + cw, cy + ch, 1.0f, 0.0f}
-        };
-
-        glBindTexture(GL_TEXTURE_2D, c->texid());
-
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 5, NULL, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void*)(3 * sizeof(float)));
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        for (int i = 0; i < text.size(); i++) {
+            texttexs.push_back(chartexmap.loadCharTexture(text[i], fontSize));
+        }
 
-        x += (c->advancex >> 6) * camera.pixelPerUnit;
+        timer.startTimer();
     }
 
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
+    TextLabel::~TextLabel()
+    {
+    }
 
-void TextLabel::renderSelect(Camera& camera, int code) const
-{
-}
+    void TextLabel::draw(const Camera& camera) const
+    {
+        shader->useprogram();
+        shader->setUniformMat4x4f("_projection", 1, glm::value_ptr(camera.getProjection()));
+        shader->setUniformMat4x4f("_view", 1, glm::value_ptr(camera.getView()));
+        shader->setUniformMat4x4f("_model", 1, glm::value_ptr(transform.localToWorld()));
+        shader->setUniformVec4f("_textColor", (float)textColor.r / 255.0f, (float)textColor.g / 255.0f, (float)textColor.b / 255.0f, (float)textColor.a / 255.0f);
+        glActiveTexture(GL_TEXTURE0);
+        shader->setUniform1i("_text", 0);
 
+        glBindVertexArray(vao);
+
+        float x = 0;
+        float y = 0;
+        float z = 0;
+
+        for (int i = 0; i < text.size(); i++) {
+            CharTexture* c = texttexs[i];
+
+            float cx = x + c->bearing.x * camera.pixelPerUnit;
+            float cy = y - (c->size.y - c->bearing.y) * camera.pixelPerUnit;
+            float cw = c->size.x * camera.pixelPerUnit;
+            float ch = c->size.y * camera.pixelPerUnit;
+
+            float vertices[6][5] = {
+                {cx,      cy + ch, z, 0.0f, 0.0f},
+                {cx,      cy,      z, 0.0f, 1.0f},
+                {cx + cw, cy,      z, 1.0f, 1.0f},
+                                   
+                {cx,      cy + ch, z, 0.0f, 0.0f},
+                {cx + cw, cy,      z, 1.0f, 1.0f},
+                {cx + cw, cy + ch, z, 1.0f, 0.0f}
+            };
+
+            glBindTexture(GL_TEXTURE_2D, c->texid());
+
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            x += (c->advancex >> 6) * camera.pixelPerUnit;
+        }
+
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void TextLabel::setText(std::string s)
+    {
+        text = s;
+        texttexs.clear();
+        for (int i = 0; i < text.size(); i++) {
+            texttexs.push_back(chartexmap.loadCharTexture(text[i], fontSize));
+        }
+    }
+
+
+    void TextLabel::update()
+    {
+        if (timer.currentTime() >= 1) {
+            double fps = 1.0 / Core::getFrameIntervalTime();
+            std::stringstream ss;
+            ss << (int)fps;
+            setText("FPS: " + ss.str());
+
+            timer.startTimer();
+        }
+    }
+}

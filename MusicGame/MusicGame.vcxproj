@@ -135,11 +135,14 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="AssetsManager.cpp" />
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CharTexture.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="MouseEvent.cpp" />
+    <ClCompile Include="Note.cpp" />
     <ClCompile Include="Object2D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -151,16 +154,20 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="AssetsManager.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CharTexture.h" />
     <ClInclude Include="depend.h" />
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="MouseEvent.h" />
+    <ClInclude Include="Note.h" />
     <ClInclude Include="Object2D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Square.h" />
     <ClInclude Include="TextLabel.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="MainWindow.h" />
   </ItemGroup>

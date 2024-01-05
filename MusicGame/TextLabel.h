@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Object2D.h"
+#include "Square.h"
 #include "depend.h"
 #include "Shader.h"
 #include "CharTexture.h"
+#include "Time.h"
 #include <map>
 
 
@@ -21,33 +22,39 @@ public:
 };
 
 
-class TextLabel : public Object2D
-{
-public:
-	TextLabel(unsigned int fontSize, const std::string& fontfile, const std::string& text = "New Text", Object2D* parent = nullptr);
-	~TextLabel();
-
-	void renderSelect(Camera& camera, int code) const override;
-	void draw(Camera& camera) const override;
-	inline void setTextColor(const Color& color)
+namespace UI {
+	class TextLabel : public Object2D
 	{
-		textColor = color;
-	}
+	public:
+		void renderColorCodeMap(const Camera& camera, int code) const override {}
+		void draw(const Camera& camera) const override;
+		TextLabel(unsigned int fontSize, const std::string& fontfile, const std::string& text = "New Text", Object2D* parent = nullptr);
+		~TextLabel();
+		inline void setTextColor(const Color& color)
+		{
+			textColor = color;
+		}
+		void setText(std::string s);
 
-private:
-	std::string text;
-	CharTexture** texttexs;
-	std::string font;
-	int fontSize;
-	Color textColor;
-	glm::ivec2 bearing;
-	unsigned int advance;
+		void update();
 
-	unsigned int vao;
-	unsigned int vbo;
-	unsigned int ibo;
+	private:
+		std::string text;
+		std::vector<CharTexture*> texttexs;
+		std::string font;
+		int fontSize;
+		Color textColor;
+		glm::ivec2 bearing;
+		unsigned int advance;
 
-public:
-	Shader* shader;
-	static CharTexturesMap chartexmap;
-};
+		unsigned int vao;
+		unsigned int vbo;
+		unsigned int ibo;
+
+	public:
+		static CharTexturesMap chartexmap;
+		Core::Time timer;
+
+		Shader* shader;
+	};
+}

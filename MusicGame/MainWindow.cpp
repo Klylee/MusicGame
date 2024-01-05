@@ -1,10 +1,15 @@
 #include "MainWindow.h"
 #include "MouseEvent.h"
+#include "Time.h"
 
 
 glm::u32vec2 pos;
 
 MouseButtonEvent* event = nullptr;
+
+
+
+
 
 void MouseMoveEventHandle(GLFWwindow* window, double xpos, double ypos)
 {
@@ -58,10 +63,15 @@ MainWindow::~MainWindow()
     glfwTerminate();
 }
 
+double Core::frameInterval = 0;
+double start;
+
 void MainWindow::mainLoop()
 {
     while (!glfwWindowShouldClose(window) && mainScene != nullptr)
     {
+        start = glfwGetTime();
+
         if (event) {
             mainScene->processSelection(window, event);
             delete event;
@@ -69,8 +79,11 @@ void MainWindow::mainLoop()
         }
         //mainScene->checkNullObject();
 
+        mainScene->update();
         mainScene->renderScene(window);
         glfwPollEvents();
+
+        Core::frameInterval = glfwGetTime() - start;
     }
 }
 

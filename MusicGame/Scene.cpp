@@ -1,8 +1,9 @@
 #include "Scene.h"
 #include <thread>
 #include <Windows.h>
+#include "Button.h"
 
-Scene::Scene(int w, int h) : camera(w, h)
+Scene::Scene(int w, int h) : Object2D(nullptr), width(w), height(h), camera(w, h)
 {
 }
 
@@ -29,7 +30,7 @@ void destroyThread(Scene* self, Object2D* obj, float timelapse)
                 delete ptr;
             }
             else if (obj->getType() == "TextLabel") {
-                TextLabel* ptr = (TextLabel*)(obj);
+                UI::TextLabel* ptr = (UI::TextLabel*)(obj);
                 delete ptr;
             }
             self->objects.erase(it);
@@ -72,7 +73,7 @@ void Scene::processSelection(GLFWwindow* window, MouseButtonEvent* e)
 
     for (int i = 0; i < objects.size(); i++) {
         if (objects[i]->active && objects[i]->eventSate())
-            objects[i]->renderSelect(camera, i + 1);
+            objects[i]->renderColorCodeMap(camera, i + 1);
     }
 
     unsigned char color[4];
@@ -81,10 +82,11 @@ void Scene::processSelection(GLFWwindow* window, MouseButtonEvent* e)
     glReadPixels(e->position.x, viewport[3] - e->position.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &color);
     
     if (color[0] > 0 && color[0] < objects.size() + 1) {
-        if (objects[color[0] - 1]->getType() == "Square") {
-            Square* obj = (Square*)(objects[color[0] - 1]);
-            obj->mouseEvent(e);
+        if (objects[color[0] - 1]->getType() == "UI") {
+            UI::Button* uiobj = (UI::Button*)(objects[color[0] - 1]);
+            uiobj->mouseEvent(e);
         }
     }
             
 }
+
