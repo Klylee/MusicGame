@@ -24,7 +24,7 @@ Application::Application(MainWindow& window)
 
     notePrefab = new Note(mainScene);
     notePrefab->shader = assetsManager.loadShader(std::string(ROOT_PATH) + "assets/Shaders/ui.shader");
-    notePrefab->texture = assetsManager.loadTexture(std::string(ROOT_PATH) + "assets/textures/star.png");
+    notePrefab->texture = assetsManager.loadTexture(std::string(ROOT_PATH) + "assets/textures/otto.png");
     notePrefab->color = Color(180, 179, 255, 255);
     notePrefab->textureTransparency = 0.0f;
     notePrefab->setDestroyDelegate(std::bind(&Scene::destroy, mainScene, std::placeholders::_1, std::placeholders::_2));
