@@ -18,7 +18,11 @@ class Transform
 public:
 	Vector3 position() const;
 	void position(Vector3 pos);
+
+	// angle: deg
 	Vector3 eulerAngles() const;
+
+	// angle: deg
 	void eulerAngles(Vector3 eulerangle);
 	Vector3 scale() const;
 	void scale(Vector3 scale);
@@ -28,11 +32,11 @@ public:
 };
 
 
-
+// trans * rotate * scale
 inline void Transform::calcuLToW()
 {
 	_localToWorld = glm::mat4(1);
-	_localToWorld = glm::scale(_localToWorld, _scale);
-	_localToWorld = glm::mat4_cast(_rotation) * _localToWorld;
 	_localToWorld = glm::translate(_localToWorld, _position);
+	_localToWorld = _localToWorld * glm::mat4_cast(_rotation);
+	_localToWorld = glm::scale(_localToWorld, _scale);
 }

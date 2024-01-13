@@ -16,7 +16,7 @@ Application::Application(MainWindow& window)
     button->color = Color(240, 233, 249, 255);
     button->textureTransparency = 0.0f;
     button->transform.scale(Vector3(2.0f, 1.0f, 1.0f));
-    button->transform.position(Vector3(2.0f, 0, 0));
+    button->transform.position(mainScene->screenPostoWorldPos(800, 400, 0));
     button->setCallback(std::bind(&Application::on_Square_Clicked, this, std::placeholders::_1));
     button->setCallback(std::bind(&Application::func, this, std::placeholders::_1));
 
@@ -25,6 +25,9 @@ Application::Application(MainWindow& window)
     notePrefab = new Note(mainScene);
     notePrefab->shader = assetsManager.loadShader(std::string(ROOT_PATH) + "assets/Shaders/ui.shader");
     notePrefab->texture = assetsManager.loadTexture(std::string(ROOT_PATH) + "assets/textures/otto.png");
+    
+    notePrefab->transform.scale(Vector3(1.0, 0.5, 1));
+    notePrefab->transform.position(mainScene->screenPostoWorldPos(400, 0, 0));
     notePrefab->color = Color(180, 179, 255, 255);
     notePrefab->textureTransparency = 0.0f;
     notePrefab->setDestroyDelegate(std::bind(&Scene::destroy, mainScene, std::placeholders::_1, std::placeholders::_2));
@@ -93,13 +96,16 @@ void Application::func(std::string e)
 void Application::loadTracks()
 {
     // std::ifstream trackFile(std::string(ROOT_PATH) + "assets/GameSources/music1.trac");
-    for (int i = 0; i < 100; i++) {
-        for (int j = 0; j < 4; j++) {
+
+    float bpm = 60;
+    float beatMap[7][2] = {
+        {0, 0}, {0, 0.5}, {1, 1.0}, {1, 1.5}, {3, 2.0}, {3, 2.5}, {2, 3.0}
+    };
+    for (int i = 0; i < 7; i++) {
             Note* note = notePrefab->duplicate();
             mainScene->addObject(note);
-            note->transform.position(mainScene->screenPostoWorldPos(200 + j * 100, 0 - i * 100 - j * 25, 0));
+            note->transform.position(mainScene->screenPostoWorldPos(200 + beatMap[i][0] * 100, -beatMap[i][1] * note->speed / mainScene->camera.pixelPerUnit, 0));
             note->active = false;
-            gameManager->tracks[j].push(note);
-        }                       
+            gameManager->tracks[(int)beatMap[i][0]].push(note);                
     }
 }
